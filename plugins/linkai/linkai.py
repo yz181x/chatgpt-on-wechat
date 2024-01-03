@@ -99,7 +99,7 @@ class LinkAI(Plugin):
                 _set_reply_text("开启对话失败，请稍后再试吧", e_context)
                 return
             USER_FILE_MAP[_find_user_id(context) + "-file_id"] = res.get("file_id")
-            _set_reply_text("💡你可以问我关于这篇文章的任何问题，例如：\n\n" + res.get("questions") + "\n\n发送 \"退出对话\" 可以关闭与文章的对话", e_context, level=ReplyType.TEXT)
+            _set_reply_text("💡你可以问我关于这篇文章的任何问题，例如：\n\n" + res.get("questions") + "\n\n发送 \"君茂分析\" 可以利用君茂的投资框架来自动分析" + "\n发送 \"君茂分析框架\" 可以查看具体的分析框架" + "\n\n发送 \"退出对话\" 可以关闭与文章的对话" , e_context, level=ReplyType.TEXT)
             return
 
         if context.type == ContextType.TEXT and context.content == "退出对话" and _find_file_id(context):
@@ -108,6 +108,246 @@ class LinkAI(Plugin):
             bot.sessions.clear_session(context["session_id"])
             _set_reply_text("对话已退出", e_context, level=ReplyType.TEXT)
             return
+
+        if context.type == ContextType.TEXT and context.content == "君茂分析框架" and _find_file_id(context):
+            junmaofenxi_res = """
+输入的指令、对应的问题；\n\n
+君茂分析1、根据文档信息，详细介绍一下这个项目，知道多少就介绍多少，尽可能详细；
+君茂分析2、简单介绍该项目的团队，包括董事长、CEO等主要成员的信息，包括不限于学历、主要经理和职业信息等等，尽可能详细；
+君茂分析3、该公司的发展历史是怎样的；
+君茂分析4、根据商业模式画板内容来分析该公司的商业模式，具体来说包括如下几个方面，如果信息不全，知道多少告诉我多少：
+	-重要合作伙伴(Key Partnerships)
+	-关键业务（Key Activities）
+	-价值主张（Value Propositions）
+	-客户关系（Customer Relationships）
+	-客户细分（Customer Segments）
+	-核心资源（Key Resources）
+	-渠道通路（Channels）
+	-成本结构（Cost Structure）
+	-收入来源（Revenue Streams）
+君茂分析5、分析该公司的盈利能力，包括收入、利润利润率、PE、收入预测等，注意要明确数字的单位；
+君茂分析6、帮助分析该公司所处行业的竞争格局，可以按照波特五力模型的框架来分析，能分析多少就分析多少，尽你所能的分析；
+君茂分析7、尽你所能，帮我进行SWOT分析；
+君茂分析8、该公司跟同行其他公司相比，有什么核心功能点，比较的话有什么优势劣势，尽可能详细的告诉我；
+君茂分析9、该公司获得了哪些荣誉资质，包括但不限于专利、软件著作权等等，尽可能的详细一些；
+君茂分析10、根据上述信息和你的专业背景，对该项目进行一个整体的评估，务必要给出你的建议及理由；
+            """
+            _set_reply_text(junmaofenxi_res, e_context, level=ReplyType.TEXT)
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析1" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+详细介绍一下这个项目，知道多少就介绍多少，尽可能详细。
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析2" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+简单介绍该项目的团队，包括董事长、CEO等主要成员的信息，包括不限于学历、主要经理和职业信息等等，尽可能详细；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析3" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+该公司的发展历史是怎样的？
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析4" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+根据商业模式画板内容来分析该公司的商业模式，具体来说包括如下几个方面，如果信息不全，知道多少告诉我多少：
+	-重要合作伙伴(Key Partnerships)
+	-关键业务（Key Activities）
+	-价值主张（Value Propositions）
+	-客户关系（Customer Relationships）
+	-客户细分（Customer Segments）
+	-核心资源（Key Resources）
+	-渠道通路（Channels）
+	-成本结构（Cost Structure）
+	-收入来源（Revenue Streams）
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析5" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+分析该公司的盈利能力，包括收入、利润利润率、PE、收入预测等，注意要明确数字的单位；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析6" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+帮助分析该公司所处行业的竞争格局，可以按照波特五力模型的框架来分析，能分析多少就分析多少，尽你所能的分析；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析7" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+尽你所能，帮我进行SWOT分析；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析8" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+该公司跟同行其他公司相比，有什么核心功能点，比较的话有什么优势劣势，尽可能详细的告诉我；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析9" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+该公司获得了哪些荣誉资质，包括但不限于专利、软件著作权等等，尽可能的详细一些；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析10" and _find_file_id(context):
+            bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+            context.kwargs["file_id"] = _find_file_id(context)
+            junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，回答下面的问题：
+根据上述信息和你的专业背景，请对该项目进行一个整体的评估，务必要给出你的建议及理由；
+            """
+            reply = bot.reply(junmaofenxi, context)
+            e_context["reply"] = reply
+            e_context.action = EventAction.BREAK_PASS
+            return
+        if context.type == ContextType.TEXT and context.content == "君茂分析":
+            if _find_user_id(context) + "-file_id" in USER_FILE_MAP.keys() and _find_file_id(context):
+                bot = bridge.Bridge().find_chat_bot(const.LINKAI)
+                context.kwargs["file_id"] = _find_file_id(context)
+                junmaofenxi = """
+## Background：
+你看到的是一个项目融资文档，需要对这个项目进行评估，看是否值得投资。
+
+## Role：
+你是一名资深的一级市场股权投资的基金经理；
+
+##Objectives：
+根据文档信息，从股权投资角度来详细介绍一下这个项目，知道多少就介绍多少，尽可能详细。
+                """
+                reply = bot.reply(junmaofenxi, context)
+                e_context["reply"] = reply
+                e_context.action = EventAction.BREAK_PASS
+                return
+            else:
+                junmaofenxi_res = """
+君茂分析是根据君茂资本的基本分析框架，用AI来进行自动分析的过程。
+请上传文档并开启对话后再进行君茂分析，谢谢。
+                """
+                _set_reply_text(junmaofenxi_res, e_context, level=ReplyType.TEXT)
+                return
 
         if context.type == ContextType.TEXT and _find_file_id(context):
             bot = bridge.Bridge().find_chat_bot(const.LINKAI)

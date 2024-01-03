@@ -1,0 +1,19 @@
+{
+  "tools": [
+    "python",
+    "url-get",
+    "terminal",
+    "wikipedia",
+    "google-search",
+    "meteo-weather"
+  ],
+  "kwargs": {
+    "debug": false,
+    "request_timeout": 120,
+    "top_k_results": 2,
+    "no_default": false,
+    "google_api_key": "AIzaSyBz1GXdKKIon5DPpRndXwOsDwixWRxxmnM",
+    "google_cse_id": "a15f3aa772b4c432e",
+    "model_name": "gpt-3.5-turbo"
+  }
+}
