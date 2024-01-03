@@ -2,7 +2,7 @@
   "debug": true,
   "channel_type": "wx",
   "model": "gpt-3.5-turbo",
-  "open_ai_api_key": "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",
+  "open_ai_api_key": "sk-1D2sepsAEjRJoReY1PNnxT3BlbkFJQMOFrz5OiN2GYMLWkcXI",
   "text_to_image": "dall-e-2",
   "voice_to_text": "openai",
   "text_to_voice": "openai",
@@ -33,6 +33,6 @@
   "top_p": 1,
   "subscribe_msg": "感谢您的关注！\n这里是ChatGPT，可以自由对话。\n支持语音对话。\n支持图片输入。\n支持图片输出，画字开头的消息将按要求创作图片。\n支持tool、角色扮演和文字冒险等丰富的插件。\n输入{trigger_prefix}#help 查看详细指令。",
   "use_linkai": true,
-  "linkai_api_key": "Link_tYDmW7RA8gI1xBrMhNiKcttcD2XIcIQfPH8oHYIVYg",
+  "linkai_api_key": "Link_1tYDmW7RA8gI1xBrMhNiKcttcD2XIcIQfPH8oHYIVYg",
   "linkai_app_code": "iU4Pw6VQ"
 }
