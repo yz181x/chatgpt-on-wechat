@@ -301,7 +301,8 @@ class AssistantBot(Bot):
                 print("结果：" + str(result))
                 tool_outputs.append({
                     "tool_call_id": tool_call.id,
-                    "output": json.dumps(result),
+                    # "output": json.dumps(result),
+                    "output": result,
                 })
 
             # 提交函数调用的结果
@@ -393,7 +394,7 @@ def chat_with_file(arguments):
     headers = {
         "Content-Type": "application/json"
     }
-    res = requests.post(url="http://127.0.0.1:8010/chat_with_file", json=body, headers=headers,
+    res = requests.post(url="http://d5j.ai:8010/chat_with_file", json=body, headers=headers,
                         timeout=180)
     if res.status_code == 200:
         # execute success
