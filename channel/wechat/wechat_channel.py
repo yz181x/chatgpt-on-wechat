@@ -153,6 +153,8 @@ class WechatChannel(ChatChannel):
             logger.debug("[WX]receive image msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.PATPAT:
             logger.debug("[WX]receive patpat msg: {}".format(cmsg.content))
+        elif cmsg.ctype == ContextType.SHARING:
+            logger.debug("[WX]receive sharing msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
             logger.debug("[WX]receive text msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
         else:

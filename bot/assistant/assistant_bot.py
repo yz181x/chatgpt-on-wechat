@@ -12,11 +12,14 @@ import requests
 from bot.bot import Bot
 from bot.chatgpt.chat_gpt_session import ChatGPTSession
 from bot.session_manager import SessionManager
+from bot.assistant.assistant_data import DataStorage
 from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from common.log import logger
 from common.token_bucket import TokenBucket
 from config import conf, load_config
+
+import re
 
 # OpenAI对话模型API (可用)
 class AssistantBot(Bot):
@@ -47,15 +50,30 @@ class AssistantBot(Bot):
         from openai import OpenAI
 
         self.client = OpenAI(api_key=openai.api_key)
-        #self.client = OpenAI(api_key="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")
-        self.assistant = self.client.beta.assistants.retrieve(assistant_id="asst_p7884ovmJojoHvsMXj3DzwgH")
-        #self.thread = self.client.beta.threads.retrieve(thread_id="thread_JXFD8Tpz3KmF0H1jLTOSqrK3")
-        self.thread = self.client.beta.threads.create(
-            metadata={"fullname": "seven", "username": "seven yang"}
-        )
+        self.assistant = self.client.beta.assistants.retrieve(assistant_id="asst_EXT07sA7z2ryt6mgkv0FehKW")
+        
+        #self.thread = self.client.beta.threads.retrieve(thread_id="thread_qKhvFzJgz6vuOdzmpcTBrxVm")
+        self.thread = self.client.beta.threads.create(metadata={"fullname": "seven", "username": "seven yang"})
                 
         self.show_json(self.assistant)
         self.show_json(self.thread)
+        with open("assistant_thread_info.json", 'w', encoding='utf-8') as file:
+            json.dump(self.assistant.model_dump_json(), file, ensure_ascii=False, indent=4)
+            json.dump(self.thread.model_dump_json(), file, ensure_ascii=False, indent=4)
+
+        self.data_storage = DataStorage()
+        
+    def _split_quote(self, query):
+        pattern = r'^「(.*?)：\[(.*?)\](.*?)」\n-.*-\n(.*)$'
+        match = re.match(pattern, query, re.DOTALL)
+        if match:
+            nickname = match.group(1)
+            link_type = match.group(2)
+            title = match.group(3).strip()
+            query = match.group(4).strip()
+            return nickname, link_type, title, query
+        else:
+            return None
 
     def reply(self, query, context=None):
         reply = None
@@ -64,6 +82,16 @@ class AssistantBot(Bot):
         
         if context.type == ContextType.TEXT:
             logger.info("[CHATGPT] query={}".format(query))
+
+            if "」\n- - - - - - -" in query:
+                nick_name, quote_type, title, question = self._split_quote(query)
+                if quote_type == "链接":
+                    quote_type = "SHARING"
+                elif quote_type == "文件":
+                    quote_type = "FILE"
+                content = self.data_storage.retrieve_data(quote_type, nick_name, title)
+
+                query = question + "\n" + "'" + content + "'"
 
             session_id = context["session_id"]
             clear_memory_commands = conf().get("clear_memory_commands", ["#清除记忆"])
@@ -92,6 +120,25 @@ class AssistantBot(Bot):
             #     return self.reply_text_stream(query, new_query, session_id)
 
             reply_content = self.reply_text(session, api_key, args=new_args)
+            # body = {
+            #     "app_code": "link",
+            #     "input_str": query
+            # }
+            # headers = {
+            #     "Content-Type": "application/json"
+            # }
+            # res = requests.post(url="http://d5j.ai:8010/kimi", json=body, headers=headers,
+            #                     timeout=180)
+            # if res.status_code == 200:
+            #     # execute success
+            #     reply_content = res.json()
+            # else:
+            #     # execute failed
+            #     reply_content = {
+            #         "total_tokens": 0,
+            #         "completion_tokens": 0,
+            #         "content": "我现在有点累了，等会再来吧"
+            #     }
             logger.debug(
                 "[CHATGPT] new_query={}, session_id={}, reply_cont={}, completion_tokens={}".format(
                     session.messages,
@@ -119,26 +166,47 @@ class AssistantBot(Bot):
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply
         elif context.type == ContextType.FILE:
-            context.get("msg").prepare()
+            msg = context.get("msg")
+            msg.prepare()
             file_path = context.content
             file_name = os.path.basename(file_path)
+            nickname = msg.from_user_nickname
+            user_id = msg.from_user_id
+            category = context.type
             try:
-                self.current_file = self.client.files.create(
-                    file=open(file_path, "rb"), 
-                    purpose="assistants",
-                )
-                self.show_json(self.current_file)
-                response = self._reply_text_internal(query="", file_ids=[self.current_file.id])
-                response_txt = f"""
-我收到了你上传的文件，文件名为：{file_name}.
-你可以对这个文件进行提问、摘要等操作。
-"""                
-                #reply = Reply(ReplyType.TEXT, response.data[0].content[0].text.value)
+                self.data_storage.add_data(nickname, category.name, file_name, file_path, user_id)
+                response_txt = f"""我已收到了你上传的文件，文件名为：
+
+# {file_name} #
+
+你可以引用这个文件，然后进行提问、摘要等操作。"""                
                 reply = Reply(ReplyType.TEXT, response_txt)
             except:
                 pass
             finally:
-                os.remove(file_path)
+                #os.remove(file_path)
+                pass
+            return reply
+        elif context.type == ContextType.SHARING:
+            msg = context.get("msg")
+            file_name = msg.FileName
+            link_address = context.content
+            nickname = msg.from_user_nickname
+            user_id = msg.from_user_id
+            category = context.type
+            try:
+                self.data_storage.add_data(nickname, category.name, file_name, link_address, user_id)
+                response_txt = f"""我已收到了你上传的链接，标题为：
+
+# {file_name} #
+
+你可以引用这个链接，然后进行提问、摘要等操作。"""                
+                reply = Reply(ReplyType.TEXT, response_txt)
+            except:
+                pass
+            finally:
+                #os.remove(file_path)
+                pass
             return reply
         else:
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
@@ -192,6 +260,7 @@ class AssistantBot(Bot):
 
     def show_json(self, obj):
         print(json.dumps(json.loads(obj.model_dump_json()), indent=4, ensure_ascii=False))
+        
 
     def wait_on_run(self, run, thread):
         """等待 run 结束，返回 run 对象，和成功的结果"""
@@ -243,7 +312,7 @@ class AssistantBot(Bot):
             )
 
             # 递归调用，直到 run 结束
-            return wait_on_run(run, thread)
+            return self.wait_on_run(run, thread)
 
         if run.status == "completed":
             """成功"""
@@ -256,6 +325,8 @@ class AssistantBot(Bot):
 
         # 执行失败
         return run, None
+
+
 
     def create_message_and_run(self, assistant, thread, content, file_ids=[]):
         """创建消息并执行"""
@@ -284,7 +355,63 @@ class AssistantBot(Bot):
         return result
 
 
+def chat_with_link(arguments):
+    question = arguments["question"]
+    link = arguments["url"]
+    
+    body = {
+        "app_code": "link",
+        "question": question,
+        "link": link
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    res = requests.post(url="http://d5j.ai:8010/chat_with_link", json=body, headers=headers,
+                        timeout=180)
+    if res.status_code == 200:
+        # execute success
+        reply_content = res.json()
+    else:
+        # execute failed
+        reply_content = {
+            "total_tokens": 0,
+            "completion_tokens": 0,
+            "content": "我现在有点累了，等会再来吧"
+        }
+    return reply_content["content"]
 
+def chat_with_file(arguments):
+    question = arguments["question"]
+    filepath = arguments["filepath"]
+    
+    body = {
+        "app_code": "link",
+        "question": question,
+        "link": "http://d5j.ai:8010/cached_data/2022.pdf"
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    res = requests.post(url="http://d5j.ai:8010/chat_with_link", json=body, headers=headers,
+                        timeout=180)
+    if res.status_code == 200:
+        # execute success
+        reply_content = res.json()
+    else:
+        # execute failed
+        reply_content = {
+            "total_tokens": 0,
+            "completion_tokens": 0,
+            "content": "我现在有点累了，等会再来吧"
+        }
+    return reply_content["content"]
+
+# 可以被回调的函数放入此字典
+available_functions = {
+    "chat_with_link": chat_with_link,
+    "chat_with_file": chat_with_file,
+}
 
 if __name__ == "__main__":
     bot = AssistantBot()

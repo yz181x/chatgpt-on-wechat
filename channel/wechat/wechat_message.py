@@ -59,6 +59,7 @@ class WechatMessage(ChatMessage):
         elif itchat_msg["Type"] == SHARING:
             self.ctype = ContextType.SHARING
             self.content = itchat_msg.get("Url")
+            self.FileName = itchat_msg["FileName"]
 
         else:
             raise NotImplementedError("Unsupported message type: Type:{} MsgType:{}".format(itchat_msg["Type"], itchat_msg["MsgType"]))

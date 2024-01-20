@@ -91,8 +91,8 @@ class ChatChannel(Channel):
         if ctype == ContextType.TEXT:
             if first_in and "」\n- - - - - - -" in content:  # 初次匹配 过滤引用消息
                 logger.debug(content)
-                logger.debug("[WX]reference query skipped")
-                return None
+                #logger.debug("[WX]reference query skipped")
+                #return None
 
             nick_name_black_list = conf().get("nick_name_black_list", [])
             if context.get("isgroup", False):  # 群聊
@@ -220,7 +220,8 @@ class ChatChannel(Channel):
                     "msg": context.get("msg")
                 }
             elif context.type == ContextType.SHARING:  # 分享信息，当前无默认逻辑
-                pass
+                context["channel"] = e_context["channel"]
+                reply = super().build_reply_content(context.content, context)
             elif context.type == ContextType.FUNCTION: # 函数调用，当前无默认逻辑
                 pass
             elif context.type == ContextType.FILE:     # 文件消息
