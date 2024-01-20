@@ -168,7 +168,7 @@ class AssistantBot(Bot):
         elif context.type == ContextType.FILE:
             msg = context.get("msg")
             msg.prepare()
-            file_path = context.content
+            file_path = os.path.abspath(context.content)
             file_name = os.path.basename(file_path)
             nickname = msg.from_user_nickname
             user_id = msg.from_user_id
@@ -388,12 +388,12 @@ def chat_with_file(arguments):
     body = {
         "app_code": "link",
         "question": question,
-        "link": "http://d5j.ai:8010/cached_data/2022.pdf"
+        "filepath": filepath
     }
     headers = {
         "Content-Type": "application/json"
     }
-    res = requests.post(url="http://d5j.ai:8010/chat_with_link", json=body, headers=headers,
+    res = requests.post(url="http://127.0.0.1:8010/chat_with_file", json=body, headers=headers,
                         timeout=180)
     if res.status_code == 200:
         # execute success
