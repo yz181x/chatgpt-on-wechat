@@ -191,9 +191,11 @@ def get_response(driver, input_text, last_response):
 
     last_text = get_last_div_text(driver)
 
-    while True:
+    loop_nums = 60
+    while loop_nums >= 0:
         # 等待一段时间，例如 5 秒
         time.sleep(2)
+        loop_nums -= 1
 
         # 再次获取最后一个 div 的文本内容
         new_text = get_last_div_text(driver)
@@ -202,12 +204,13 @@ def get_response(driver, input_text, last_response):
         if(
             new_text == last_text 
             and not new_text.endswith("停止输出") 
-            and get_last_div_text(driver) != last_response
-            and get_last_div_text(driver) != input_text
+            and new_text != last_response
+            and new_text != input_text
         ):
             #print("内容输出似乎已完成。")
             break
         else:
+            app.logger.debug("new_text:" + new_text + "\nlast_test:" + last_text + "\ninput_test:" + input_text + "\nlast_response:" + last_response)
             last_text = new_text  # 更新文本内容以便下一次比较
         
         app.logger.debug("get response: " + new_text)
@@ -276,6 +279,7 @@ def chat_with_file():
     data = request.get_json()
     question = data['question']
     filepath = data['filepath']
+    filepath = filepath.replace("\n", "")
     app.logger.info("question: " + question)
     app.logger.info("filepath: " + filepath)
 
