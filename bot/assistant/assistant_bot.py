@@ -382,6 +382,31 @@ def chat_with_link(arguments):
         }
     return reply_content["content"]
 
+def search(arguments):
+    question = arguments["question"]
+    
+    body = {
+        "app_code": "link",
+        "input_str": question,
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    res = requests.post(url="http://d5j.ai:8010/search", json=body, headers=headers,
+                        timeout=180)
+    if res.status_code == 200:
+        # execute success
+        reply_content = res.json()
+    else:
+        # execute failed
+        reply_content = {
+            "total_tokens": 0,
+            "completion_tokens": 0,
+            "content": "我现在有点累了，等会再来吧"
+        }
+    return reply_content["content"]
+
+
 def chat_with_file(arguments):
     question = arguments["question"]
     filepath = arguments["filepath"]
@@ -412,6 +437,7 @@ def chat_with_file(arguments):
 available_functions = {
     "chat_with_link": chat_with_link,
     "chat_with_file": chat_with_file,
+    "search": search,
 }
 
 if __name__ == "__main__":
