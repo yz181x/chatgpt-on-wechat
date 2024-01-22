@@ -50,16 +50,10 @@ class AssistantBot(Bot):
         from openai import OpenAI
 
         self.client = OpenAI(api_key=openai.api_key)
-        self.assistant = self.client.beta.assistants.retrieve(assistant_id="asst_EXT07sA7z2ryt6mgkv0FehKW")
-        
-        #self.thread = self.client.beta.threads.retrieve(thread_id="thread_qKhvFzJgz6vuOdzmpcTBrxVm")
-        self.thread = self.client.beta.threads.create(metadata={"fullname": "seven", "username": "seven yang"})
-                
+        self.assistant_id = "asst_EXT07sA7z2ryt6mgkv0FehKW"
+        self.assistant = self.client.beta.assistants.retrieve(self.assistant_id)
         self.show_json(self.assistant)
-        self.show_json(self.thread)
-        with open("assistant_thread_info.json", 'w', encoding='utf-8') as file:
-            json.dump(self.assistant.model_dump_json(), file, ensure_ascii=False, indent=4)
-            json.dump(self.thread.model_dump_json(), file, ensure_ascii=False, indent=4)
+        self.threads = {}
 
         self.data_storage = DataStorage()
         
@@ -80,6 +74,20 @@ class AssistantBot(Bot):
         # acquire reply content
         logger.info(f"Current location: {__file__}:{inspect.currentframe().f_lineno}")
         
+        nick_name = context.get("msg").from_user_nickname
+        from_user_id = context.get("msg").from_user_id
+        thread_id = self.data_storage.retrieve_thread(nick_name)
+        if thread_id in self.threads:
+            self.thread = self.threads[thread_id]
+        else:
+            if thread_id:
+                self.thread = self.client.beta.threads.retrieve(thread_id=thread_id)
+            else:
+                self.thread = self.client.beta.threads.create(metadata={"from_user_id": from_user_id, "username": nick_name})
+                self.data_storage.add_thread(nick_name, self.assistant_id, self.thread.id)
+                thread_id = self.thread.id
+            self.threads[thread_id] = self.thread
+
         if context.type == ContextType.TEXT:
             logger.info("[CHATGPT] query={}".format(query))
 
