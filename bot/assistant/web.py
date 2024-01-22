@@ -18,6 +18,7 @@ from logging import FileHandler
 
 # 文件所在的目录
 FILES_DIRECTORY = '/home/yang/work/chatgpt-on-wechat/cached_data'
+global_variable = {}
 
 app = Flask(__name__)
 #file_handler = FileHandler('web.log')
@@ -26,7 +27,7 @@ app = Flask(__name__)
 #app.logger.addHandler(stream_handler)
 app.logger.setLevel(logging.DEBUG)
 
-def init(init_url):
+def init(init_urls):
     # 初始化 WebDriver
     app.logger.debug("init webdriver")
     options = Options()
@@ -34,9 +35,15 @@ def init(init_url):
     #options.add_argument("--log-level=3")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(options=options)
-    driver.get(init_url)
-    return driver
+
+    drivers = []
+    for init_url in init_urls:
+        app.logger.debug("init url: " + init_url)
+        driver = webdriver.Chrome(options=options)  
+        driver.get(init_url)
+        drivers.append(driver)
+
+    return drivers
 
 def login_with_qrcode(driver):
     app.logger.debug("login_with_qrcode")
@@ -241,9 +248,48 @@ def login_wait_code():
             return password 
         else:
             time.sleep(2)
+
+def switch_to_tab(function_name):
+    try:
+        # 切换到新标签页
+        driver, tab_index = global_variable[function_name]
+        driver.switch_to.window(driver.window_handles[tab_index])
+        return driver
+
+    except Exception as e:
+        print("switch_to_tab error: ", e)
+        return None
+
+@app.route('/search', methods=['POST'])
+def search():
+    driver = switch_to_tab("search")
+    data = request.get_json()
+    input_str = data['input_str']
+    app.logger.info("get request: " + input_str)
+    last_response = get_last_div_text(driver)
+    result, message = input_text(driver, input_str)
+    if (result):
+        res = get_response(driver, input_str, last_response)
+        app.logger.info("put response: " + res)
+        return {
+                'response': res,
+                'content': res,
+                "total_tokens": 100,
+                'completion_tokens': 50,
+                }
+    else:
+        driver.refresh()
+        time.sleep(2)
+        return {
+                'response': message,
+                'content': message,
+                "total_tokens": 100,
+                'completion_tokens': 50,
+                }
  
 @app.route('/chat_with_link', methods=['POST'])
 def chat_with_link():    
+    driver = switch_to_tab("chat_with_link")
     data = request.get_json()
     question = data['question']
     link = data['link']
@@ -273,6 +319,8 @@ def chat_with_link():
 
 @app.route('/chat_with_file', methods=['POST'])
 def chat_with_file():    
+    driver = switch_to_tab("chat_with_file")
+
     data = request.get_json()
     question = data['question']
     filepath = data['filepath']
@@ -306,6 +354,8 @@ def chat_with_file():
 
 @app.route('/chat', methods=['POST'])
 def chat():    
+    driver = switch_to_tab("chat")
+    
     data = request.get_json()
     input_str = data['input_str']
     app.logger.info("get request: " + input_str)
@@ -344,13 +394,27 @@ def root():
 if __name__ == "__main__":
 
     login_init()
-    init_url = "https://kimi.moonshot.cn/"
     while True:
         try:
-            driver = init(init_url)
+            init_urls = ["https://kimi.moonshot.cn/"]
+            drivers = init(init_urls)
+            driver_kimi = drivers[0]
+
             time.sleep(5)
             #login_with_phone(driver)
-            login_with_qrcode(driver)
+            login_with_qrcode(driver_kimi)
+
+            # 打开一个新的标签页
+            driver_kimi.execute_script("window.open('');")
+
+            global_variable["chat_with_link"] = (drivers[0], 0)
+            global_variable["chat_with_file"] = (drivers[0], 0)
+            global_variable["chat"] = (drivers[0], 0)
+            global_variable["search"] = (drivers[0], 1)
+
+            driver_search = switch_to_tab("search")
+            driver_search.get("https://kimi.moonshot.cn/")
+
             break
         except Exception as e:
             print("出现异常.", e)
