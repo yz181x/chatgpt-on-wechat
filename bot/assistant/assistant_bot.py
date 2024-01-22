@@ -179,7 +179,7 @@ class AssistantBot(Bot):
 
 # {file_name} #
 
-你可以引用这个文件，然后进行提问、摘要等操作。"""                
+你可以引用这个文件，然后针对文件内容进行提问。"""                
                 reply = Reply(ReplyType.TEXT, response_txt)
             except:
                 pass
@@ -196,11 +196,11 @@ class AssistantBot(Bot):
             category = context.type
             try:
                 self.data_storage.add_data(nickname, category.name, file_name, link_address, user_id)
-                response_txt = f"""我已收到了你上传的链接，标题为：
+                response_txt = f"""我已收到了你分享的文章，文章标题为：
 
 # {file_name} #
 
-你可以引用这个链接，然后进行提问、摘要等操作。"""                
+你可以引用这篇文章，然后针对文章内容进行提问。"""                
                 reply = Reply(ReplyType.TEXT, response_txt)
             except:
                 pass
