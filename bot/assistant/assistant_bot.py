@@ -416,8 +416,14 @@ def search(arguments):
 
 def backtest(arguments):
     backtest_query = arguments["backtest_query"]
-    start_date = arguments["start_date"] or "2019-1-1"
-    end_date = arguments["end_date"] or "2023-12-31"
+    if "start_date" in arguments:
+        start_date = arguments["start_date"]
+    else:
+        start_date = "2019-1-1"
+    if "end_date" in arguments:
+        end_date = arguments["end_date"]
+    else:
+        end_date = "2023-12-31"
     
     body = {
         "app_code": "link",
