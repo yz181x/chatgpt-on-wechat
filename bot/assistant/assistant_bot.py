@@ -414,6 +414,29 @@ def search(arguments):
         }
     return reply_content["content"]
 
+def backtest(arguments):
+    backtest_query = arguments["backtest_query"]
+    
+    body = {
+        "app_code": "link",
+        "input_str": backtest_query,
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    res = requests.post(url="http://d5j.ai:8010/backtest", json=body, headers=headers,
+                        timeout=180)
+    if res.status_code == 200:
+        # execute success
+        reply_content = res.json()
+    else:
+        # execute failed
+        reply_content = {
+            "total_tokens": 0,
+            "completion_tokens": 0,
+            "content": "我现在有点累了，等会再来吧"
+        }
+    return reply_content["content"]
 
 def chat_with_file(arguments):
     question = arguments["question"]
@@ -446,6 +469,7 @@ available_functions = {
     "chat_with_link": chat_with_link,
     "chat_with_file": chat_with_file,
     "search": search,
+    "backtest": backtest,
 }
 
 if __name__ == "__main__":
