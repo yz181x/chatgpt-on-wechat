@@ -416,10 +416,14 @@ def search(arguments):
 
 def backtest(arguments):
     backtest_query = arguments["backtest_query"]
+    start_date = arguments["start_date"] or "2019-1-1"
+    end_date = arguments["end_date"] or "2023-12-31"
     
     body = {
         "app_code": "link",
         "input_str": backtest_query,
+        "start_date": start_date,
+        "end_date": end_date
     }
     headers = {
         "Content-Type": "application/json"
