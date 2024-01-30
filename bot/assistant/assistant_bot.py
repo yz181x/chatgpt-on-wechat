@@ -92,7 +92,7 @@ class AssistantBot(Bot):
             logger.info("[CHATGPT] query={}".format(query))
 
             if "」\n- - - - - - -" in query:
-                nick_name, quote_type, title, question = self._split_quote(query)
+                actual_nick_name, quote_type, title, question = self._split_quote(query)
                 if quote_type == "链接":
                     quote_type = "SHARING"
                 elif quote_type == "文件":
